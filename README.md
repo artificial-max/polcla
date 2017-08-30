@@ -102,6 +102,64 @@ CLAUSE_BASELINE_MODULE=FALSE
 ###
 ```
 
+## Lexicons
+The system uses a sentiment lexicon (Germanlex), a shifter lexicon, and optionally, an intensifier lexicon.
+
+### Sentiment Lexicon - Germanlex
+The employed sentiment lexicon ![Germanlex](polcla/src/main/resources/dictionaries/germanlex.txt) comes from PolArt (Klenner et al., 2009).
+It contains information about what words express a sentiment, the polarity of the sentiment (positive, negative or neutral) as well as the intensity of the sentiment. And finally, the part of speech of every entry.
+Germanlex also contains entries about shifters and intensifiers, although these entries are ignored in the sentiment lexicon, as they get their own lexicons instead.
+```
+Format: 
+Word {NEG|POS|NEU|SHI|INT}=PolarityStrength PoS
+SHI for Shifters, INT for Intensifiers
+INT < 1, e.g. 0.5 is a reduction factor, > 1, e.g. 2 is a gain factor 
+
+Example entries:
+gut POS=1 adj
+Unverschämtheit NEG=1 nomen
+anzweifeln NEG=0.7 verben
+```
+
+### Shifter Lexicon
+The ![shifter lexicon](polcla/src/main/resources/dictionaries/shifter_lex.txt) contains information about what words should be considered to be shifters, what type of shifter they are, what their scope is, and finally, their part of speech.
+The scope is specified with dependency labels. A list dependency labels with explanations and examples can be found here:
+https://github.com/rsennrich/ParZu/blob/master/LABELS.md
+```
+Format:
+<shifter> <type> [<scope>] <pos>
+
+Type {n,p,g}
+n: The shifter shifts negative sentiment words
+p: The shifter shifts positive sentiment words
+g: The shifter shifts all (general) sentiment words
+
+Scope [{attr-rev,objg,obja,objd,objc,obji,s,objp-*,subj,gmod,dependent,clause,objp-ohne}]
+If the scope is given as "[subj]", only words that are in a subject relation with the shifter will be considered as the shifter target.
+
+Examples:
+stagnieren g [subj] verb
+verschlimmern p [objg,obja,objd,objc,obji,s,objp-*,subj] verb
+gescheitert g [subj,attr-rev] adj
+Abspaltung g [gmod,objp-*] nomen
+```
+
+### Intensifier Lexicon
+The ![intensifier lexicon](polcla/src/main/resources/dictionaries/intensifier_lex.txt) functions in the same way as the shifter lexicon.
+In contrast to shifters, intensifiers are thought to increase the strength of a sentiment without changing its direction from positive to negative or the other way around.
+
+```
+Format:
+<intensifier> <type> [<scope>] <pos>
+Type {n,p,g}
+Scope [{attr-rev,objg,obja,objd,objc,obji,s,objp-*,subj,gmod,dependent,clause,objp-ohne}]
+
+Examples:
+ziemlich g [subj,attr-rev] adj
+wirklich g [subj,attr-rev] adj
+extrem g [subj,attr-rev] adj
+```
+
 ## Usage/License
 This software is licensed under the GNU GENERAL PUBLIC LICENSE.
 Please refer to LICENSE.md for more detail.

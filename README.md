@@ -84,9 +84,9 @@ POS_LOOKUP_SHIFTER=TRUE
 SHIFTER_ORIENTATION_CHECK=FALSE
 
 ###
-# Baseline Module: Checks for shifter targets to the specified direction of a shifter within a given window-based scope.
+# Window Baseline Module: Checks for shifter targets to the specified direction of a shifter within a given window-based scope.
 # Default: FALSE
-BASELINE_MODULE=FALSE
+WINDOW_BASELINE_MODULE=FALSE
 # The window size for shifter targets.
 # Default size: 4
 BASELINE_WINDOW=4
@@ -98,7 +98,7 @@ BASELINE_DIRECTION=BOTH
 # Baseline Rule Module: Checks for shifter targets without using specific dependency relations 
 # filtered by lexicon scope entries, but instead by looking at all direct dependencies.
 # Default: FALSE
-BASELINE_RULE_MODULE=FALSE
+CLAUSE_BASELINE_MODULE=FALSE
 ###
 ```
 

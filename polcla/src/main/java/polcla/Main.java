@@ -51,16 +51,22 @@ public class Main {
       String baseline_direction = prop.getProperty("BASELINE_DIRECTION");
       Boolean use_preset_se_input = Boolean.valueOf(prop.getProperty("USE_PRESET_SE_INPUT"));
       Boolean normalize = Boolean.valueOf(prop.getProperty("NORMALIZE"));
-      Boolean baseline_module = Boolean.valueOf(prop.getProperty("BASELINE_MODULE"));
-      Boolean baseline_rule_module = Boolean.valueOf(prop.getProperty("BASELINE_RULE_MODULE"));
+      Boolean window_baseline_module = Boolean.valueOf(prop.getProperty("WINDOW_BASELINE_MODULE"));
+      Boolean clause_baseline_module = Boolean.valueOf(prop.getProperty("CLAUSE_BASELINE_MODULE"));
       Boolean pos_lookup_sentiment = Boolean.valueOf(prop.getProperty("POS_LOOKUP_SENTIMENT"));
       Boolean pos_lookup_shifter = Boolean.valueOf(prop.getProperty("POS_LOOKUP_SHIFTER"));
       Boolean shifter_orientation_check = Boolean.valueOf(prop.getProperty("SHIFTER_ORIENTATION_CHECK"));
       Boolean include_neutral_expressions = Boolean.valueOf(prop.getProperty("INCLUDE_NEUTRAL_EXPRESSIONS"));
       int baseline_window = Integer.valueOf(prop.getProperty("BASELINE_WINDOW"));
 
+      // If more than one module is set to TRUE, warn the user and return.
+      if (window_baseline_module && clause_baseline_module){
+        System.err.println("Both baseline modules are set to TRUE at the same time. Please turn one module off.");
+        return;
+      }
+      
       // Make sure that correct properties are set in case of baseline module.
-      if (baseline_module) {
+      if (window_baseline_module) {
         if (baseline_window < 1) {
           System.err.println("n must be bigger than 0 for the baseline module to work!");
           System.err.println("Entered number: n=" + baseline_window);
@@ -80,10 +86,10 @@ public class Main {
 
       // If no other module is turned on, use the standard
       // subjective expression module.
-      Boolean subjective_expression_module = (baseline_module.equals(false) && baseline_rule_module.equals(false));
+      Boolean subjective_expression_module = (window_baseline_module.equals(false) && clause_baseline_module.equals(false));
 
       // Only one module should be turned on at the same time.
-      if (baseline_module && baseline_rule_module) {
+      if (window_baseline_module && clause_baseline_module) {
         System.err.println("WARNING: Both Baseline Modules are turned on!");
         System.err.println("Check the config file!");
         log.warning("WARNING: Both Baseline Modules are turned on!");
@@ -184,27 +190,27 @@ public class Main {
       }
 
       // Baseline Module
-      if (baseline_module && got_preset_se_file && use_preset_se_input) {
-        final BaselineModule baselineModule;
-        baselineModule = new BaselineModule(salsa, sentimentLex, shifterLex, baseline_window, baseline_direction,
+      if (window_baseline_module && got_preset_se_file && use_preset_se_input) {
+        final WindowBaseline baselineModule;
+        baselineModule = new WindowBaseline(salsa, sentimentLex, shifterLex, baseline_window, baseline_direction,
                 pos_lookup_sentiment, pos_lookup_shifter, shifter_orientation_check);
         modules.add(baselineModule);
-      } else if (baseline_module) {
-        final BaselineModule baselineModule;
-        baselineModule = new BaselineModule(sentimentLex, shifterLex, baseline_window, baseline_direction,
+      } else if (window_baseline_module) {
+        final WindowBaseline baselineModule;
+        baselineModule = new WindowBaseline(sentimentLex, shifterLex, baseline_window, baseline_direction,
                 pos_lookup_sentiment, pos_lookup_shifter, shifter_orientation_check);
         modules.add(baselineModule);
       }
 
       // Baseline Rule Module
-      if (baseline_rule_module && got_preset_se_file && use_preset_se_input) {
-        final BaselineRuleModule baselineRuleModule;
-        baselineRuleModule = new BaselineRuleModule(salsa, sentimentLex, shifterLex,
+      if (clause_baseline_module && got_preset_se_file && use_preset_se_input) {
+        final ClauseBaseline baselineRuleModule;
+        baselineRuleModule = new ClauseBaseline(salsa, sentimentLex, shifterLex,
                 pos_lookup_sentiment, pos_lookup_shifter, shifter_orientation_check);
         modules.add(baselineRuleModule);
-      } else if (baseline_rule_module) {
-        final BaselineRuleModule baselineRuleModule;
-        baselineRuleModule = new BaselineRuleModule(sentimentLex, shifterLex, pos_lookup_sentiment,
+      } else if (clause_baseline_module) {
+        final ClauseBaseline baselineRuleModule;
+        baselineRuleModule = new ClauseBaseline(sentimentLex, shifterLex, pos_lookup_sentiment,
                 pos_lookup_shifter, shifter_orientation_check);
         modules.add(baselineRuleModule);
       }

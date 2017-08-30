@@ -1,91 +1,101 @@
 package polcla;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import polcla.ConstituencyTree;
-import polcla.Edge;
-import polcla.SalsaAPIConnective;
-import polcla.SentimentLex;
-import polcla.SentimentUnit;
-import polcla.ShifterLex;
-import polcla.ShifterUnit;
-import polcla.WordObj;
+import java.util.LinkedList;
 
 import salsa.corpora.elements.Fenode;
 import salsa.corpora.elements.Flag;
 import salsa.corpora.elements.Frame;
 import salsa.corpora.elements.FrameElement;
 import salsa.corpora.elements.Global;
-import salsa.corpora.elements.Nonterminal;
 import salsa.corpora.elements.Target;
-import salsa.corpora.elements.Terminal;
 
-public class BaselineRuleModule extends ModuleBasics implements Module {
+public class WindowBaseline extends ModuleBasics implements Module {
 
-  private final static Logger log = Logger.getLogger(BaselineRuleModule.class.getName());
+  /**
+   * Defines the window in which shifter targets are searched for.
+   */
+  private final int window;
 
-  private final Collection<Global> globalsSentencePolaritiesB;
+  /**
+   * Defines the direction in which shifter targets are searched for.
+   */
+  private final String direction;
+  private static final String LEFT = "LEFT";
+  private static final String RIGHT = "RIGHT";
+  private static final String BOTH = "BOTH";
+
+  /**
+   * Stores each sentence's polarity
+   */
+  private final Collection<Global> globalsSentencePolarities = new ArrayList<Global>();
 
   /**
    * Globals are sentence flags. Stores each sentence's polarity.
    *
-   * @return ArrayList<Global> globalsSentencePolaritiesB
+   * @return ArrayList<Global> globalsSentencePolarities
    */
   @Override
   public Collection<Global> getGlobalsSentencePolarities() {
-    return globalsSentencePolaritiesB;
+    return globalsSentencePolarities;
   }
 
   /**
-   * Constructs a new BaselineModule. Looks for shifter targets within the same
-   * clause as the shifter.
+   * Constructs a new BaselineModule. Looks for shifter targets within the
+   * specified window to the right of the shifter. Does not use dependency
+   * information
    *
    * @param sentimentLex A SentimentLex object in which the rules for finding
    * sentiment sources and targets are saved as SentimentUnits.
    * @param shifterLex A ShifterLex object in which the rules for finding
    * shifter targets are saved as ShifterUnits.
+   * @param window Defines the window/window in which shifter targets are
+   * searched for.
+   * @param direction Determines the direction in which to look for shifter
+   * targets. Either left or right of the shifter.
    * @param pos_lookup_sentiment Option to do pos lookup for SEs.
    * @param pos_lookup_shifter Option to do pos lookup for shifters.
-   * @param shifter_orientation_check Option to do orientation check for
-   * shifters.
+   * @param shifter_orientation_check Option to take shifter orientation into
+   * account.
    */
-  public BaselineRuleModule(SentimentLex sentimentLex, ShifterLex shifterLex, Boolean pos_lookup_sentiment,
-          Boolean pos_lookup_shifter, Boolean shifter_orientation_check) {
-    this.globalsSentencePolaritiesB = new ArrayList<Global>();
-    log.setLevel(Level.ALL);
+  public WindowBaseline(SentimentLex sentimentLex, ShifterLex shifterLex, int window, String direction,
+          Boolean pos_lookup_sentiment, Boolean pos_lookup_shifter, Boolean shifter_orientation_check) {
     this.sentimentLex = sentimentLex;
     this.shifterLex = shifterLex;
+    this.window = window;
+    this.direction = direction;
     this.posLookupSentiment = pos_lookup_sentiment;
     this.posLookupShifter = pos_lookup_shifter;
     this.shifter_orientation_check = shifter_orientation_check;
   }
 
   /**
-   * Constructs a new BaselineModule. Looks for shifter targets within the same
-   * clause as the shifter.
+   * Constructs a new BaselineModule. Looks for shifter targets within the
+   * specified window to the right of the shifter. Does not use dependency
+   * information. Uses preset SE locations.
    *
    * @param salsa Salsa API connective containing locations of SEs.
    * @param sentimentLex A SentimentLex object in which the rules for finding
    * sentiment sources and targets are saved as SentimentUnits.
    * @param shifterLex A ShifterLex object in which the rules for finding
    * shifter targets are saved as ShifterUnits.
+   * @param window Defines the window/window in which shifter targets are
+   * searched for.
+   * @param direction Determines the direction in which to look for shifter
+   * targets. Either left or right of the shifter.
    * @param pos_lookup_sentiment Option to do pos lookup for SEs.
    * @param pos_lookup_shifter Option to do pos lookup for shifters.
-   * @param shifter_orientation_check Option to do orientation check for
-   * shifters.
+   * @param shifter_orientation_check Option to take shifter orientation into
+   * account.
    */
-  public BaselineRuleModule(SalsaAPIConnective salsa, SentimentLex sentimentLex, ShifterLex shifterLex,
-          Boolean pos_lookup_sentiment, Boolean pos_lookup_shifter, Boolean shifter_orientation_check) {
-    this.globalsSentencePolaritiesB = new ArrayList<Global>();
-    log.setLevel(Level.ALL);
+  public WindowBaseline(SalsaAPIConnective salsa, SentimentLex sentimentLex, ShifterLex shifterLex, int window,
+          String direction, Boolean pos_lookup_sentiment, Boolean pos_lookup_shifter, Boolean shifter_orientation_check) {
     this.salsa = salsa;
     this.sentimentLex = sentimentLex;
     this.shifterLex = shifterLex;
+    this.window = window;
+    this.direction = direction;
     this.posLookupSentiment = pos_lookup_sentiment;
     this.posLookupShifter = pos_lookup_shifter;
     this.shifter_orientation_check = shifter_orientation_check;
@@ -95,8 +105,8 @@ public class BaselineRuleModule extends ModuleBasics implements Module {
   /**
    * Looks at a single SentenceObj to find any subjective expressions and adds
    * the information to the Salsa XML structure. First shifters and their
-   * targets are located, afterwards subjective expressions outside the scope of
-   * a shifter are considered.
+   * targets are located, afterwards subjective expressions outside the window
+   * of a shifter are considered.
    *
    * @param sentence The SentenceObj which is to be checked for subjective
    * expressions.
@@ -108,7 +118,7 @@ public class BaselineRuleModule extends ModuleBasics implements Module {
      */
     final Collection<Frame> frames = new ArrayList<Frame>();
     final FrameIds frameIds = new FrameIds(sentence, "se");
-    globalsSentencePolaritiesB.removeAll(globalsSentencePolaritiesB);
+    globalsSentencePolarities.removeAll(globalsSentencePolarities);
 
     ArrayList<WordObj> sentimentList = new ArrayList<WordObj>();
     ArrayList<WordObj> shifterList = new ArrayList<WordObj>();
@@ -154,13 +164,26 @@ public class BaselineRuleModule extends ModuleBasics implements Module {
       }
     }
 
-    // Iterate over every found shifter and search for targets in their scope.
-    // Also set frames.
+    OUTER:
     for (WordObj shifter : shifterList) {
+      WordObj shifterTarget = null;
       // Look for the shifterTarget
-      log.log(Level.FINE, "Shifter: {0}", shifter.toString());
-      WordObj shifterTarget = findShifterTargetBaselineRule(shifter, sentimentList, sentence);
-
+      switch (direction) {
+        case RIGHT:
+          shifterTarget = findShifterTargetBaselineRight(shifter, sentimentList, sentence, window);
+          break;
+        case LEFT:
+          shifterTarget = findShifterTargetBaselineLeft(shifter, sentimentList, sentence, window);
+          break;
+        case BOTH:
+          shifterTarget = findShifterTargetBaselineBoth(shifter, sentimentList, sentence, window);
+          break;
+        default:
+          System.err.println("False direction input for Baseline given!");
+          System.err.println("Direction given: " + direction);
+          System.err.println("Check the config properties!");
+          break OUTER;
+      }
       if (shifterTarget != null) {
 
         // Create Frame object for Salsa XML output
@@ -251,28 +274,20 @@ public class BaselineRuleModule extends ModuleBasics implements Module {
       final Flag polarityWithoutShift = new Flag("polarity without shift: " + valueAndCat, "subjExpr");
       frame.addFlag(polarityWithoutShift);
     }
-    // final Frame sentenceFrame = new Frame("Sentence");
-    // final Flag polaritySumFlag = new Flag("Sentence polarity: " +
-    // String.format("%.2f", polaritySum), "sentence");
-    // final Target sentenceTarget = new Target();
-    // sentenceTarget.addFenode(new
-    // Fenode(sentence.getTree().getTrueRoot().getId()));
-    // sentenceFrame.addFlag(polaritySumFlag);
-    // sentenceFrame.setTarget(sentenceTarget);
-    // frames.add(sentenceFrame);
 
     final Global sentencePolarity = new Global("INTERESTING");
     sentencePolarity.setParam(String.format("%.2f", polaritySum));
     sentencePolarity.setText("The sentence polarity.");
-    globalsSentencePolaritiesB.add(sentencePolarity);
+    globalsSentencePolarities.add(sentencePolarity);
 
     return frames;
   }
 
   /**
-   * This method is used to look for the target of a shifter using dependency
-   * relations. The found shifter target must be contained in the sentimentList
-   * in order to be returned by this method. Ignores scopes.
+   * This method is used to look for the target of a shifter using a given
+   * window and lexicon look-up. The found shifter target must be contained in
+   * the sentimentList in order to be returned by this method. Looks to the
+   * right of the shifter.
    *
    * @param shifter The shifter for which a target is searched for.
    * @param sentimentList A list of found sentiments in the current sentence.
@@ -280,93 +295,105 @@ public class BaselineRuleModule extends ModuleBasics implements Module {
    * @param sentence The sentence the shifter is in.
    * @return The WordObj corresponding to the found shifter target, or null.
    */
-  private WordObj findShifterTargetBaselineRule(WordObj shifter, ArrayList<WordObj> sentimentList,
-          SentenceObj sentence) {
+  private WordObj findShifterTargetBaselineRight(WordObj shifter, ArrayList<WordObj> sentimentList,
+          SentenceObj sentence, int window) {
     WordObj shifterTarget = null;
-    ShifterUnit shifterUnit = shifterLex.getShifter(shifter.getLemma());
+    LinkedList<WordObj> wordList = sentence.getWordList();
+    int shifterPos = sentence.getWordPosition(shifter);
 
-    HashSet<Edge> edges = sentence.getGraph().getEdges();
-
-    String[] scopeEntry = shifterUnit.shifter_scope;
-    // "Clause" case
-    if (Arrays.asList(scopeEntry).contains("clause") || true) { // || true to use clause case for all instances.
-      final ConstituencyTree tree = sentence.getTree();
-      final Terminal shifterNode = tree.getTerminal(shifter);
-      final Nonterminal containingClause;
-
-      int shifterPos = sentence.getWordPosition(shifter);
-
-      if (tree.hasDominatingNode(shifterNode, "S")) {
-        containingClause = tree.getLowestDominatingNode(shifterNode, "S");
-      } else {
-        // This shouldn't happen except in case of parsing errors
-        containingClause = tree.getTrueRoot();
-      }
-
-      // First collect all terminals in the containing clause (childrenT)
-      ArrayList<Object> children = tree.getChildren(containingClause);
-      ArrayList<Object> childrenT = new ArrayList<>();
-      for (int i = 0; i < children.size(); i++) {
-        Object child = children.get(i);
-        // System.out.println("child: " + child.toString());
-        if (child instanceof Terminal) {
-          childrenT.add(child);
-        } else if (child instanceof Nonterminal) {
-          children.add(tree.getChildren((Nonterminal) child));
-        } else {
-          for (Object part : (ArrayList<Object>) child) {
-            children.add(part);
-          }
-        }
-      }
-			// System.err.println("Children expanded: " + childrenNT);
-
-      // Now consider all SE-terminals to be potential shifterTargets.
-      HashMap<WordObj, Integer> shifterTargets = new HashMap<>();
-      for (Object c : childrenT) {
-        Terminal childT = null;
-        if (c instanceof Terminal) {
-          childT = (Terminal) c;
-          // Compare Id with terminal Ids of the tree terminals to get to the
-          // WordObjs.
-          int wordIndex = 0;
-          for (Terminal terminal : tree.getTerminals()) {
-            wordIndex += 1;
-            String terminalId = terminal.getId().getId();
-            if (terminalId.equals(childT.getId().getId())) {
-              WordObj wordObj = sentence.getWordList().get(wordIndex - 1);
-              // Check if the word is a SE in the current sentence.
-              if (sentimentList.contains(wordObj)) {
-                shifterTargets.put(wordObj, wordIndex - 1);
-              }
+    for (int i = 1; i <= window; i++) {
+      if (wordList.size() > shifterPos + i) {
+        shifterTarget = wordList.get(shifterPos + i);
+        if (sentimentList.contains(shifterTarget)) {
+          if (shifter_orientation_check) {
+            if (orientationCheck(shifter, shifterTarget)) {
+              return shifterTarget;
             }
-          }
-        } else {
-          log.log(Level.SEVERE, "WARNING, Terminal expected for: {0}", c.toString());
-        }
-      }
-      // Find the closest shifterTarget from the list
-      log.log(Level.FINE, "Potential targets in clause case: {0}", shifterTargets.keySet().toString());
-      int bestDistance = Integer.MAX_VALUE;
-      if (!shifterTargets.isEmpty()) {
-        for (WordObj shifterCandidate : shifterTargets.keySet()) {
-          int distance = Math.abs(shifterPos - shifterTargets.get(shifterCandidate));
-          if (distance < bestDistance && distance != 0) {
-            bestDistance = distance;
-            shifterTarget = shifterCandidate;
-            log.log(Level.FINE, "current candidate: {0}", shifterTarget);
-          }
-        }
-      }
-      log.log(Level.FINE, "final candidate: {0}", shifterTarget);
-
-      if (sentimentList.contains(shifterTarget) && !shifterTarget.equals(shifter)) {
-        if (shifter_orientation_check) {
-          if (orientationCheck(shifter, shifterTarget)) {
+          } else {
             return shifterTarget;
           }
-        } else {
-          return shifterTarget;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * This method is used to look for the target of a shifter using a given
+   * window and lexicon look-up. The found shifter target must be contained in
+   * the sentimentList in order to be returned by this method. Looks to the left
+   * of the shifter.
+   *
+   * @param shifter The shifter for which a target is searched for.
+   * @param sentimentList A list of found sentiments in the current sentence.
+   * These are the potential shifter target candidates.
+   * @param sentence The sentence the shifter is in.
+   * @return The WordObj corresponding to the found shifter target, or null.
+   */
+  private WordObj findShifterTargetBaselineLeft(WordObj shifter, ArrayList<WordObj> sentimentList, SentenceObj sentence,
+          int window) {
+    WordObj shifterTarget = null;
+    LinkedList<WordObj> wordList = sentence.getWordList();
+    int shifterPos = sentence.getWordPosition(shifter);
+
+    for (int i = 1; i <= window; i++) {
+      if (shifterPos - i >= 0) {
+        shifterTarget = wordList.get(shifterPos - i);
+        if (sentimentList.contains(shifterTarget)) {
+          if (shifter_orientation_check) {
+            if (orientationCheck(shifter, shifterTarget)) {
+              return shifterTarget;
+            }
+          } else {
+            return shifterTarget;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * This method is used to look for the target of a shifter using a given
+   * window and lexicon look-up. The found shifter target must be contained in
+   * the sentimentList in order to be returned by this method. Looks to both
+   * sides of the shifter in alternating fashion, starting right.
+   *
+   * @param shifter The shifter for which a target is searched for.
+   * @param sentimentList A list of found sentiments in the current sentence.
+   * These are the potential shifter target candidates.
+   * @param sentence The sentence the shifter is in.
+   * @return The WordObj corresponding to the found shifter target, or null.
+   */
+  private WordObj findShifterTargetBaselineBoth(WordObj shifter, ArrayList<WordObj> sentimentList, SentenceObj sentence,
+          int window) {
+    WordObj shifterTarget = null;
+    LinkedList<WordObj> wordList = sentence.getWordList();
+    int shifterPos = sentence.getWordPosition(shifter);
+
+    for (int i = 1; i <= window; i++) {
+      if (wordList.size() > shifterPos + i) {
+        shifterTarget = wordList.get(shifterPos + i);
+        if (sentimentList.contains(shifterTarget)) {
+          if (shifter_orientation_check) {
+            if (orientationCheck(shifter, shifterTarget)) {
+              return shifterTarget;
+            }
+          } else {
+            return shifterTarget;
+          }
+        }
+      }
+      if (shifterPos - i >= 0) {
+        shifterTarget = wordList.get(shifterPos - i);
+        if (sentimentList.contains(shifterTarget)) {
+          if (shifter_orientation_check) {
+            if (orientationCheck(shifter, shifterTarget)) {
+              return shifterTarget;
+            }
+          } else {
+            return shifterTarget;
+          }
         }
       }
     }

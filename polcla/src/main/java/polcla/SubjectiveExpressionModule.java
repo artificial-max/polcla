@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import salsa.corpora.elements.Fenode;
 import salsa.corpora.elements.Flag;
 import salsa.corpora.elements.Frame;
@@ -16,14 +15,6 @@ import salsa.corpora.elements.Nonterminal;
 import salsa.corpora.elements.Target;
 import salsa.corpora.elements.Terminal;
 import java.util.Iterator;
-import polcla.ConstituencyTree;
-import polcla.Edge;
-import polcla.SalsaAPIConnective;
-import polcla.SentimentLex;
-import polcla.SentimentUnit;
-import polcla.ShifterLex;
-import polcla.ShifterUnit;
-import polcla.WordObj;
 
 /**
  * Find subjective expressions (SE) and shifter and their targets. Optionally

@@ -160,6 +160,10 @@ wirklich g [subj,attr-rev] adj
 extrem g [subj,attr-rev] adj
 ```
 
+## Data
+Apart from the lexicons, the system expects raw text, a constituency parse and a dependency parse as ![input](polcla/src/main/resources/Input/.). Optionally, an xml file specifying the position of subjective expressions can be given.
+You may find scripts to get the constituency and dependency parses here: https://github.com/miwieg/german-opinion-role-extractor
+
 ## Usage/License
 This software is licensed under the GNU GENERAL PUBLIC LICENSE.
 Please refer to LICENSE.md for more detail.

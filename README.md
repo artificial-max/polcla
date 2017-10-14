@@ -168,10 +168,16 @@ Apart from the lexicons, the system expects raw text, a constituency parse and a
 You may find scripts to get the constituency and dependency parses here: https://github.com/miwieg/german-opinion-role-extractor
 
 ## Output
+![alt text](https://user-images.githubusercontent.com/26704902/31576752-a39e7034-b101-11e7-8fef-1ddc5b362619.jpg)
+
 The format of the xml-file output is the TIGER/SALSA format (Erk & Padó, 2004). This format was
 designed for semantic role labeling, but also allows for easy modeling of negation. With
 help of the SALTO tool (Burchardt et al., 2006), quick annotation and a neat visualization
 of TIGER/SALSA files is possible.
+
+The screenshot shows an annotated example sentence (translation: The ladies and gentlemen are never satisfied with what they have).
+In this case, *zufrieden* is a Polar Expression that is being negated by the shifter *Nie*.
+Visualization via the SALTO tool.
 
 ## Usage/License
 This software is licensed under the GNU GENERAL PUBLIC LICENSE.

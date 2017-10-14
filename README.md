@@ -19,7 +19,7 @@ java -jar target/polcla-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ## Preprocessing
-This system expects the data to be processed to be already preprocessed by various NLP analyses (i.e. part-of-speech tagging, parsing and named-entity recognition).
+This system expects the data to be preprocessed by various NLP analyses (i.e. part-of-speech tagging, parsing and named-entity recognition).
 The specific tools for this kind of preprocessing are not included in the release of this system.
 However, you may find shellscripts for installing and running these tools in another project here:
 https://github.com/miwieg/german-opinion-role-extractor
@@ -40,18 +40,18 @@ OUTPUT=output/salsaResult.xml
 ###
 # Optional path specifications
 # If available, the position of subjective expressions in a sentence may be given to the system.
-# The xml-file should be in the same format as the constituency parse file, with additional subjective expression frames.
-# constituency_parse.preset_ses.xml provides an example.
+# The xml-file for PRESET_SE_INPUT should be in the same format as the constituency parse file (CONSTITUENCY_INPUT), with additional subjective expression frames.
+# The file constituency_parse.preset_ses.xml provides an example.
 # If not available, the sentiment lexicon (SENTIMENT_LEXICON_INPUT) is used to identify subjective expressions and their locations.
 PRESET_SE_INPUT=src/main/resources/Input/constituency_parse.preset_ses.xml
 
 # Option to use preset subjective expression information (TRUE), or to use
 # the sentiment lexicon for subjective expression identification instead (FALSE).
-# If no file is specified for PRESET_SE_INPUT, this option is meaningless.
+# If no file is specified for PRESET_SE_INPUT, this option only works if a file is specified for PRESET_SE_INPUT.
 # Default: TRUE
 USE_PRESET_SE_INPUT=TRUE
 
-# Option to also consider neutral entries of germanlex (labeled NEU).
+# Option to also consider neutral entries of SENTIMENT_LEXICON_INPUT (labeled NEU).
 # If set to TRUE, neutral expressions will be labeled as polar expressions,
 # but won't affect sentence polarity.
 # Default: FALSE
@@ -65,7 +65,7 @@ NORMALIZE=TRUE
 
 # Option to consider POS tags for subjective expressions.
 # Compares POS tags of words in a sentence with sentiment lexicon entries.
-# If a mismatch between a lexicon entry's POS tag and a corresponding word is found, the word will not be considered to be a subjective
+# If a mismatch between the POS tag of a lexicon entry and a corresponding word is found, the word will not be considered to be a subjective
 # expression.
 # Only meaningful if USE_PRESET_SE_INPUT=FALSE.
 # Default: TRUE
@@ -95,8 +95,7 @@ BASELINE_WINDOW=4
 # Default: BOTH
 BASELINE_DIRECTION=BOTH
 
-# Baseline Rule Module: Checks for shifter targets without using specific dependency relations 
-# filtered by lexicon scope entries, but instead by looking at all direct dependencies.
+# Clause Module: Checks for shifter targets in the clause in which a shifter occurs.
 # Default: FALSE
 CLAUSE_BASELINE_MODULE=FALSE
 ###
@@ -125,6 +124,10 @@ anzweifeln NEG=0.7 verben
 The ![shifter lexicon](polcla/src/main/resources/dictionaries/shifter_lex.txt) contains information about what words should be considered to be shifters, what type of shifter they are, what their scope is, and finally, their part of speech.
 The scope is specified with dependency labels. A list dependency labels with explanations and examples can be found here:
 https://github.com/rsennrich/ParZu/blob/master/LABELS.md
+
+Detailed descriptions of label deveations can be looked up in a seperate paper:
+Michael Wiegand et al. "Saarland University’s participation in the German sentiment analysis shared task (GESTALT)." 
+Workshop Proceedings of the 12th KONVENS. 2014 (pp. 174-184).
 ```
 Format:
 <shifter> <type> [<scope>] <pos>
@@ -134,7 +137,7 @@ n: The shifter shifts negative sentiment words
 p: The shifter shifts positive sentiment words
 g: The shifter shifts all (general) sentiment words
 
-Scope [{attr-rev,objg,obja,objd,objc,obji,s,objp-*,subj,gmod,dependent,clause,objp-ohne}]
+Scope [{attr-rev,objg,obja,objd,objc,obji,s,objp-*,subj,gmod,dependent,governor,clause,objp-ohne}]
 If the scope is given as "[subj]", only words that are in a subject relation with the shifter will be considered as the shifter target.
 
 Examples:
@@ -152,7 +155,7 @@ In contrast to shifters, intensifiers are thought to increase the strength of a 
 Format:
 <intensifier> <type> [<scope>] <pos>
 Type {n,p,g}
-Scope [{attr-rev,objg,obja,objd,objc,obji,s,objp-*,subj,gmod,dependent,clause,objp-ohne}]
+Scope [{attr-rev,objg,obja,objd,objc,obji,s,objp-*,subj,gmod,dependent,governor,clause,objp-ohne}]
 
 Examples:
 ziemlich g [subj,attr-rev] adj
@@ -163,6 +166,12 @@ extrem g [subj,attr-rev] adj
 ## Data
 Apart from the lexicons, the system expects raw text, a constituency parse and a dependency parse as ![input](polcla/src/main/resources/Input/.). Optionally, an xml file specifying the position of subjective expressions can be given.
 You may find scripts to get the constituency and dependency parses here: https://github.com/miwieg/german-opinion-role-extractor
+
+## Output
+The format of the xml-file output is the TIGER/SALSA format (Erk & Padó, 2004). This format was
+designed for semantic role labeling, but also allows for easy modeling of negation. With
+help of the SALTO tool (Burchardt et al., 2006), quick annotation and a neat visualization
+of TIGER/SALSA files is possible.
 
 ## Usage/License
 This software is licensed under the GNU GENERAL PUBLIC LICENSE.
@@ -177,14 +186,21 @@ This work was partially supported by the German Research Foundation (DFG) under 
 This software package also includes the Java API to process the SALSA XML corpora:
 http://www.coli.uni-saarland.de/projects/salsa/page.php?id=software
 implemented by members of the SALSA-project at Saarland University.
-The software package also includes the Zurcher Polart-sentiment lexicon (Klenner et al., 2009)
+The software package also includes the Zurcher Polart-sentiment lexicon (Klenner et al., 2009).
 We thank the SALSA-project and the Department for Computational Linguistics at Zurich University (Manfred Klenner)
 for letting us use and redistribute their resources.
 
 ## Contact Information
 Maximilian Wolf                       email: M_S_Wolf@web.de
+Michael Wiegand                       email: michael.wiegand@lsv.de
 
 ## References
+Aljoscha Burchardt et al. 
+"SALTO–a versatile multi-level annotation tool." Proceedings of LREC. 2006.
+
+Katrin Erk, and Sebastian Pado. 
+"A Powerful and Versatile XML Format for Representing Role-semantic Annotation." LREC. 2004.
+
 Manfred Klenner, Angela Fahrni and Stefanos Petrakis
    "PolArt: A Robust Tool for Sentiment Analysis",
     in Proceedings of the Nordic Conference on Computational Linguistics (NoDaLiDa), pages 235-238, Odense, Denmark. 2009.
@@ -192,3 +208,7 @@ Manfred Klenner, Angela Fahrni and Stefanos Petrakis
 Michael Wiegand, Maximilian Wolf and Josef Ruppenhofer
   "Negation Modeling for German Polarity Classification", 
   in Proceedings of the German Society for Computational Linguistics and Language Technology (GSCL), Potsdam, Germany. 2017.
+  
+Michael Wiegand et al. 
+  "Saarland University’s participation in the German sentiment analysis shared task (GESTALT)." ,
+  Workshop Proceedings of the 12th KONVENS. 2014.

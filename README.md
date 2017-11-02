@@ -125,7 +125,7 @@ The ![shifter lexicon](polcla/src/main/resources/dictionaries/shifter_lex.txt) c
 The scope is specified with dependency labels. A list dependency labels with explanations and examples can be found here:
 https://github.com/rsennrich/ParZu/blob/master/LABELS.md
 
-Detailed descriptions of label deveations can be looked up in a seperate paper:
+Detailed descriptions of label deviations can be looked up in a separate paper:
 Michael Wiegand et al. "Saarland University’s participation in the German sentiment analysis shared task (GESTALT)." 
 Workshop Proceedings of the 12th KONVENS. 2014 (pp. 174-184).
 ```
@@ -183,7 +183,7 @@ Visualization via the SALTO tool.
 This software is licensed under the GNU GENERAL PUBLIC LICENSE.
 Please refer to LICENSE.md for more detail.
 
-If you intend to use this tool for your research, please acknowledge this software by citing by citing M. Wiegand, M. Wolf and J. Ruppenhofer (2017) 
+If you intend to use this tool for your research, please acknowledge this software by citing M. Wiegand, M. Wolf and J. Ruppenhofer (2017) 
 (Full bibliographic information, see References.)
 
 ## Acknowledgements
@@ -198,7 +198,7 @@ for letting us use and redistribute their resources.
 
 ## Contact Information
 Maximilian Wolf                       email: M_S_Wolf@web.de
-Michael Wiegand                       email: michael.wiegand@lsv.de
+Michael Wiegand                       email: michael.wiegand@lsv.uni-saarland.de
 
 ## References
 Aljoscha Burchardt et al. 

@@ -125,7 +125,7 @@ The ![shifter lexicon](polcla/src/main/resources/dictionaries/shifter_lex.txt) c
 The scope is specified with dependency labels. A list dependency labels with explanations and examples can be found here:
 https://github.com/rsennrich/ParZu/blob/master/LABELS.md
 
-Detailed descriptions of label deveations can be looked up in a seperate paper:
+Detailed descriptions of label deviations can be looked up in a separate paper:
 Michael Wiegand et al. "Saarland University’s participation in the German sentiment analysis shared task (GESTALT)." 
 Workshop Proceedings of the 12th KONVENS. 2014 (pp. 174-184).
 ```
@@ -168,16 +168,22 @@ Apart from the lexicons, the system expects raw text, a constituency parse and a
 You may find scripts to get the constituency and dependency parses here: https://github.com/miwieg/german-opinion-role-extractor
 
 ## Output
+![alt text](https://user-images.githubusercontent.com/26704902/31576752-a39e7034-b101-11e7-8fef-1ddc5b362619.jpg)
+
 The format of the xml-file output is the TIGER/SALSA format (Erk & Padó, 2004). This format was
 designed for semantic role labeling, but also allows for easy modeling of negation. With
 help of the SALTO tool (Burchardt et al., 2006), quick annotation and a neat visualization
 of TIGER/SALSA files is possible.
 
+The screenshot shows an annotated example sentence (translation: The ladies and gentlemen are never satisfied with what they have).
+In this case, *zufrieden* is a Polar Expression that is being negated by the shifter *Nie*.
+Visualization via the SALTO tool.
+
 ## Usage/License
 This software is licensed under the GNU GENERAL PUBLIC LICENSE.
 Please refer to LICENSE.md for more detail.
 
-If you intend to use this tool for your research, please acknowledge this software by citing by citing M. Wiegand, M. Wolf and J. Ruppenhofer (2017) 
+If you intend to use this tool for your research, please acknowledge this software by citing M. Wiegand, M. Wolf and J. Ruppenhofer (2017) 
 (Full bibliographic information, see References.)
 
 ## Acknowledgements
@@ -192,7 +198,7 @@ for letting us use and redistribute their resources.
 
 ## Contact Information
 Maximilian Wolf                       email: M_S_Wolf@web.de
-Michael Wiegand                       email: michael.wiegand@lsv.de
+Michael Wiegand                       email: michael.wiegand@lsv.uni-saarland.de
 
 ## References
 Aljoscha Burchardt et al. 

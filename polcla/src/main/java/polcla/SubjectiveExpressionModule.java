@@ -405,15 +405,19 @@ public class SubjectiveExpressionModule extends ModuleBasics implements Module {
             if (shifterTarget != null && sentimentList != null
                     && sentimentList.contains(shifterTarget)
                     && !shifterTarget.equals(shifter)) {
-              governor += 1;
-              return shifterTarget;
+              if (orientationCheck(shifter, shifterTarget)) {
+                governor += 1;
+                return shifterTarget;
+              }
             } else {
               shifterTarget = sentence.getGraph().getChild(shifterTarget, "attr");
               if (shifterTarget != null && sentimentList != null
                       && sentimentList.contains(shifterTarget)
                       && !shifterTarget.equals(shifter)) {
-                governor += 1;
-                return shifterTarget;
+                if (orientationCheck(shifter, shifterTarget)) {
+                  governor += 1;
+                  return shifterTarget;
+                }
               }
             }
           }

@@ -175,9 +175,14 @@ designed for semantic role labeling, but also allows for easy modeling of negati
 help of the SALTO tool (Burchardt et al., 2006), quick annotation and a neat visualization
 of TIGER/SALSA files is possible.
 
-The screenshot shows an annotated example sentence (translation: The ladies and gentlemen are never satisfied with what they have).
+The first screenshot shows an annotated example sentence (translation: The ladies and gentlemen are never satisfied with what they have).
 In this case, *zufrieden* is a Polar Expression that is being negated by the shifter *Nie*.
 Visualization via the SALTO tool.
+
+To view the sentence polarity, either press CTRL + E, or right click the top left corner in the SALTO window to view the sentence flag marked as INTERESTING (see the circle marked 1 in the screenshot below).  
+To view the polarity of a Subjective Expression before and after a shift, right click its flag (see 2 in the screenshot).
+
+![alt text](https://user-images.githubusercontent.com/26704902/32699800-b7bf36d6-c7bb-11e7-9946-4db063cd9da7.png)
 
 ## Usage/License
 This software is licensed under the GNU GENERAL PUBLIC LICENSE.

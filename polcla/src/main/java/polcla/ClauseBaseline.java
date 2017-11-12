@@ -163,8 +163,8 @@ public class ClauseBaseline extends ModuleBasics implements Module {
         setFrames(sentence, frames, shifterTarget, frame, target);
 
         // Set FrameElement for the shifter
-        // TODO call it shifter after evaluation tool is not needed anymore!
-        final FrameElement shifterElement = new FrameElement(feIds.next(), "Target");
+        // EVAL call "Shifter" "Target" for use with the evaluation tool.
+        final FrameElement shifterElement = new FrameElement(feIds.next(), "Shifter");
         shifterElement.addFenode(new Fenode(sentence.getTree().getTerminal(shifter).getId()));
 
         // Set Frame element flag for the shifter

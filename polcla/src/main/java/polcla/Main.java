@@ -9,13 +9,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-
-import polcla.SalsaAPIConnective;
-import polcla.SentenceList;
-import polcla.SentimentChecker;
-import polcla.SentimentLex;
-import polcla.ShifterLex;
-import polcla.IntensifierLex;
 import java.util.logging.Level;
 
 public class Main {
